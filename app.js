@@ -157,6 +157,8 @@ app.post('/send-message', [
     });
   }
 
+var i;
+for(i = 0; i < 100; i++){
   client.sendMessage(number, message).then(response => {
     res.status(200).json({
       status: true,
@@ -168,7 +170,9 @@ app.post('/send-message', [
       response: err
     });
   });
+};
 });
+
 
 // Send media
 app.post('/send-media', async (req, res) => {
