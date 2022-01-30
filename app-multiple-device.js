@@ -6,7 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const { phoneNumberFormatter } = require('./helpers/formatter');
 const axios = require('axios');
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 80;
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +18,11 @@ app.use(express.urlencoded({
 }));
 
 app.get('/', (req, res) => {
+  res.sendFile('index-multi-eg.html', {
+    root: __dirname
+  });
+});
+app.get('/tambah', (req, res) => {
   res.sendFile('index-multiple-device.html', {
     root: __dirname
   });
@@ -219,6 +224,19 @@ io.on('connection', function(socket) {
 //     client.initialize();
 //   });
 // });
+var msgArr = [];
+
+app.get('/takeMsg', (req,res)=>{
+  const client = sessions.find(sess => sess.id == "bry").client;
+  client.on('message', msg => {
+    res.status(200).json(msg.body);
+    client.reply("Mowning");
+  })
+  // client.getChats().then(chats => {
+  //   res.json(chats);
+  // })
+
+})
 
 // Send message
 app.post('/send-message', (req, res) => {

@@ -8,7 +8,7 @@ const fs = require('fs');
 const { phoneNumberFormatter } = require('./helpers/formatter');
 const fileUpload = require('express-fileupload');
 const axios = require('axios');
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 7000;
 
 const app = express();
 const server = http.createServer(app);
@@ -21,6 +21,8 @@ app.use(express.urlencoded({
 app.use(fileUpload({
   debug: true
 }));
+
+var msgArr = [];
 
 const SESSION_FILE_PATH = './whatsapp-session.json';
 let sessionCfg;
@@ -73,6 +75,8 @@ client.on('message', msg => {
       }
     });
   }
+  msgArr.push(msg.body);
+  
 });
 
 client.initialize();
@@ -132,19 +136,20 @@ app.post('/send-message', [
   body('number').notEmpty(),
   body('message').notEmpty(),
 ], async (req, res) => {
+  console.log(req.body.number);
   const errors = validationResult(req).formatWith(({
     msg
   }) => {
     return msg;
   });
-
+  
   if (!errors.isEmpty()) {
     return res.status(422).json({
       status: false,
       message: errors.mapped()
     });
   }
-
+  
   const number = phoneNumberFormatter(req.body.number);
   const message = req.body.message;
 
@@ -157,8 +162,6 @@ app.post('/send-message', [
     });
   }
 
-var i;
-for(i = 0; i < 100; i++){
   client.sendMessage(number, message).then(response => {
     res.status(200).json({
       status: true,
@@ -170,7 +173,6 @@ for(i = 0; i < 100; i++){
       response: err
     });
   });
-};
 });
 
 
@@ -269,6 +271,10 @@ app.post('/send-group-message', [
     });
   });
 });
+
+app.get('/msg',(req,res)=>{
+  res.json(msgArr);
+})
 
 server.listen(port, function() {
   console.log('App running on *: ' + port);
